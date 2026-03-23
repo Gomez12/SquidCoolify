@@ -1,0 +1,54 @@
+services:
+  squid:
+    build:
+      context: .
+      dockerfile: Dockerfile.squid
+    container_name: squid-proxy
+    ports:
+      - "${SQUID_PORT:-3128}:3128"
+    environment:
+      - ALLOWED_IPS=${ALLOWED_IPS:-}
+    volumes:
+      - squid-cache:/var/spool/squid
+      - squid-logs:/var/log/squid
+      - squid-ssl:/var/lib/squid/ssl_db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "squid", "-k", "check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  squid-stats:
+    image: ghcr.io/kaelthasmanu/squidstats:latest
+    container_name: squid-stats
+    ports:
+      - "5000:5000"
+    environment:
+      - SQUID_LOG=/var/log/squid/access.log
+      - SQUID_CACHE_LOG=/var/log/squid/cache.log
+      - SQUID_HOST=squid
+      - SQUID_PORT=3128
+      - SQUID_CONFIG_PATH=/etc/squid/squid.conf
+      - DATABASE_TYPE=SQLITE
+      - DATABASE_URL=sqlite:///data/squidstats.db
+      - LISTEN_HOST=0.0.0.0
+      - LISTEN_PORT=5000
+      - FIRST_PASSWORD=${SQUIDSTATS_PASSWORD:-admin}
+      - SECRET_KEY=${SQUIDSTATS_SECRET_KEY:-changeme}
+      - TZ=${TZ:-Europe/Amsterdam}
+    volumes:
+      - squid-logs:/var/log/squid:ro
+      - squidstats-data:/app/data
+    depends_on:
+      squid:
+        condition: service_healthy
+    restart: unless-stopped
+    labels:
+      - traefik.http.middlewares.authentik-auth@file
+
+volumes:
+  squid-cache:
+  squid-logs:
+  squid-ssl:
+  squidstats-data:
