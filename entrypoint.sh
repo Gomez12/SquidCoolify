@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 SSL_DB_DIR="/var/lib/squid/ssl_db"
 CERT_DIR="/etc/squid/certs"
 CONF="/etc/squid/squid.conf"
+CERTGEN="/usr/lib/squid/security_file_certgen"
 
 # Generate self-signed CA certificate for SSL bumping
 mkdir -p "$CERT_DIR"
@@ -19,19 +20,19 @@ fi
 # Initialize SSL certificate database
 if [ ! -d "$SSL_DB_DIR/certs" ]; then
     echo "Initializing SSL certificate database..."
-    /usr/lib/squid/security_file_certgen -c -s "$SSL_DB_DIR" -M 64MB
+    "$CERTGEN" -c -s "$SSL_DB_DIR" -M 64MB
 fi
-chown -R proxy:proxy "$SSL_DB_DIR"
+chown -R squid:squid "$SSL_DB_DIR"
 
 # Build ACL from ALLOWED_IPS environment variable
 # ALLOWED_IPS can be: single IP, comma-separated IPs, or CIDR notation
 # Example: ALLOWED_IPS=192.168.1.10,10.0.0.0/24,172.16.0.5
-ACL_LINES=""
+ACL_FILE="/etc/squid/allowed_ips.conf"
+: > "$ACL_FILE"
 if [ -n "$ALLOWED_IPS" ]; then
-    IFS=',' read -ra IPS <<< "$ALLOWED_IPS"
-    for ip in "${IPS[@]}"; do
-        ip=$(echo "$ip" | xargs) # trim whitespace
-        ACL_LINES="${ACL_LINES}acl allowed_clients src ${ip}\n"
+    echo "$ALLOWED_IPS" | tr ',' '\n' | while read -r ip; do
+        ip=$(echo "$ip" | xargs)
+        [ -n "$ip" ] && echo "acl allowed_clients src ${ip}" >> "$ACL_FILE"
     done
 fi
 
@@ -44,7 +45,7 @@ http_port 3128 ssl-bump \
     dynamic_cert_mem_cache_size=16MB
 
 # === SSL Bump (HTTPS caching) ===
-sslcrtd_program /usr/lib/squid/security_file_certgen -s ${SSL_DB_DIR} -M 64MB
+sslcrtd_program ${CERTGEN} -s ${SSL_DB_DIR} -M 64MB
 sslcrtd_children 5
 ssl_bump bump all
 sslproxy_cert_error allow all
@@ -59,7 +60,7 @@ acl Safe_ports port 443
 acl Safe_ports port 1025-65535
 acl CONNECT method CONNECT
 
-$(echo -e "$ACL_LINES")
+include ${ACL_FILE}
 
 # === Access rules ===
 http_access deny !Safe_ports
@@ -108,20 +109,21 @@ refresh_pattern -i \.(css|js|woff|woff2|ttf|eot)$ 43200 90% 86400
 refresh_pattern -i \.(deb|rpm|pkg|tar\.gz|zip)$ 129600 100% 259200
 refresh_pattern . 0 20% 4320
 
-# Run as proxy user
-cache_effective_user proxy
-cache_effective_group proxy
+# Run as squid user
+cache_effective_user squid
+cache_effective_group squid
 EOF
 
 echo "=== Squid configuration ==="
 cat "$CONF"
 echo "=========================="
 
+# Create log & cache directories with correct permissions
+mkdir -p /var/log/squid /var/spool/squid
+chown -R squid:squid /var/log/squid /var/spool/squid
+
 # Create cache directories
 squid -z -N 2>/dev/null || true
-
-# Fix permissions
-chown -R proxy:proxy /var/log/squid /var/spool/squid
 
 echo "Starting Squid..."
 exec squid -NYC
