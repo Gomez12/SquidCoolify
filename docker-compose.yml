@@ -23,7 +23,9 @@ services:
       start_period: 60s
 
   squid-stats:
-    image: ghcr.io/kaelthasmanu/squidstats:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.squidstats
     ports:
       - "5000:5000"
     environment:
