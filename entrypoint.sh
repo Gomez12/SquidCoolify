@@ -36,11 +36,10 @@ if [ "$USE_SSL" = true ]; then
 
     # Initialize SSL certificate database
     SSL_DB_DIR="/var/lib/squid/ssl_db"
-    mkdir -p "$SSL_DB_DIR"
-    if [ ! -d "$SSL_DB_DIR/certs" ]; then
-        echo "Initializing SSL certificate database..."
-        "$CERTGEN" -c -s "$SSL_DB_DIR" -M 64MB
-    fi
+    chown -R squid:squid /var/lib/squid
+    rm -rf "$SSL_DB_DIR"
+    echo "Initializing SSL certificate database..."
+    "$CERTGEN" -c -s "$SSL_DB_DIR" -M 64MB
     chown -R squid:squid "$SSL_DB_DIR"
 fi
 
