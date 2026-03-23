@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.squid
-    container_name: squid-proxy
     ports:
       - "${SQUID_PORT:-3128}:3128"
     environment:
@@ -11,10 +10,10 @@ services:
     volumes:
       - squid-cache:/var/spool/squid
       - squid-logs:/var/log/squid
-      - squid-ssl:/var/lib/squid/ssl_db
+      - squid-ssl:/etc/squid/certs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "squid -k check 2>/dev/null || exit 1"]
+      test: ["CMD-SHELL", "netstat -ln | grep -q :3128 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -22,7 +21,6 @@ services:
 
   squid-stats:
     image: ghcr.io/kaelthasmanu/squidstats:latest
-    container_name: squid-stats
     ports:
       - "5000:5000"
     environment:
@@ -43,7 +41,7 @@ services:
       - squidstats-data:/app/data
     depends_on:
       squid:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     labels:
       - traefik.http.middlewares.authentik-auth@file

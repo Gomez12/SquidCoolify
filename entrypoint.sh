@@ -1,47 +1,69 @@
 #!/bin/sh
 set -e
 
-SSL_DB_DIR="/var/lib/squid/ssl_db"
 CERT_DIR="/etc/squid/certs"
 CONF="/etc/squid/squid.conf"
-CERTGEN="/usr/lib/squid/security_file_certgen"
+
+# Find the certgen helper (path varies per distro)
+CERTGEN=""
+for path in /usr/lib/squid/security_file_certgen /usr/libexec/squid/security_file_certgen /usr/lib64/squid/security_file_certgen; do
+    if [ -x "$path" ]; then
+        CERTGEN="$path"
+        break
+    fi
+done
+
+if [ -z "$CERTGEN" ]; then
+    echo "ERROR: security_file_certgen not found, listing squid files:"
+    find / -name "*certgen*" -o -name "*ssl_crtd*" 2>/dev/null || true
+    echo "Continuing without HTTPS caching..."
+    USE_SSL=false
+else
+    USE_SSL=true
+fi
 
 # Generate self-signed CA certificate for SSL bumping
-mkdir -p "$CERT_DIR"
-if [ ! -f "$CERT_DIR/squid-ca.pem" ]; then
-    echo "Generating Squid CA certificate for HTTPS caching..."
-    openssl req -new -newkey rsa:2048 -sha256 -days 3650 -nodes \
-        -x509 -extensions v3_ca \
-        -keyout "$CERT_DIR/squid-ca.pem" \
-        -out "$CERT_DIR/squid-ca.pem" \
-        -subj "/CN=Squid Proxy CA/O=SquidCoolify/C=NL"
-fi
+if [ "$USE_SSL" = true ]; then
+    mkdir -p "$CERT_DIR"
+    if [ ! -f "$CERT_DIR/squid-ca.pem" ]; then
+        echo "Generating Squid CA certificate for HTTPS caching..."
+        openssl req -new -newkey rsa:2048 -sha256 -days 3650 -nodes \
+            -x509 -extensions v3_ca \
+            -keyout "$CERT_DIR/squid-ca.pem" \
+            -out "$CERT_DIR/squid-ca.pem" \
+            -subj "/CN=Squid Proxy CA/O=SquidCoolify/C=NL"
+    fi
 
-# Initialize SSL certificate database
-if [ ! -d "$SSL_DB_DIR/certs" ]; then
-    echo "Initializing SSL certificate database..."
-    "$CERTGEN" -c -s "$SSL_DB_DIR" -M 64MB
+    # Initialize SSL certificate database
+    SSL_DB_DIR="/var/lib/squid/ssl_db"
+    mkdir -p "$SSL_DB_DIR"
+    if [ ! -d "$SSL_DB_DIR/certs" ]; then
+        echo "Initializing SSL certificate database..."
+        "$CERTGEN" -c -s "$SSL_DB_DIR" -M 64MB
+    fi
+    chown -R squid:squid "$SSL_DB_DIR"
 fi
-chown -R squid:squid "$SSL_DB_DIR"
 
 # Build ACL from ALLOWED_IPS environment variable
-# ALLOWED_IPS can be: single IP, comma-separated IPs, or CIDR notation
-# Example: ALLOWED_IPS=192.168.1.10,10.0.0.0/24,172.16.0.5
 ACL_FILE="/etc/squid/allowed_ips.conf"
 : > "$ACL_FILE"
 if [ -n "$ALLOWED_IPS" ]; then
-    echo "$ALLOWED_IPS" | tr ',' '\n' | while read -r ip; do
-        ip=$(echo "$ip" | xargs)
+    OLD_IFS="$IFS"
+    IFS=','
+    for ip in $ALLOWED_IPS; do
+        ip=$(echo "$ip" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
         [ -n "$ip" ] && echo "acl allowed_clients src ${ip}" >> "$ACL_FILE"
     done
+    IFS="$OLD_IFS"
 fi
 
 # Write squid.conf
-cat > "$CONF" <<EOF
+if [ "$USE_SSL" = true ]; then
+    cat > "$CONF" <<EOF
 # === Ports ===
-http_port 3128 ssl-bump \
-    cert=${CERT_DIR}/squid-ca.pem \
-    generate-host-certificates=on \
+http_port 3128 ssl-bump \\
+    cert=${CERT_DIR}/squid-ca.pem \\
+    generate-host-certificates=on \\
     dynamic_cert_mem_cache_size=16MB
 
 # === SSL Bump (HTTPS caching) ===
@@ -49,6 +71,15 @@ sslcrtd_program ${CERTGEN} -s ${SSL_DB_DIR} -M 64MB
 sslcrtd_children 5
 ssl_bump bump all
 sslproxy_cert_error allow all
+EOF
+else
+    cat > "$CONF" <<EOF
+# === Ports (no SSL) ===
+http_port 3128
+EOF
+fi
+
+cat >> "$CONF" <<'EOF'
 
 # === ACL definitions ===
 acl localnet src 10.0.0.0/8
@@ -59,9 +90,13 @@ acl Safe_ports port 80
 acl Safe_ports port 443
 acl Safe_ports port 1025-65535
 acl CONNECT method CONNECT
+EOF
 
-include ${ACL_FILE}
+echo "" >> "$CONF"
+echo "include /etc/squid/allowed_ips.conf" >> "$CONF"
+echo "" >> "$CONF"
 
+cat >> "$CONF" <<'EOF'
 # === Access rules ===
 http_access deny !Safe_ports
 http_access deny CONNECT !SSL_ports
@@ -69,12 +104,12 @@ EOF
 
 # If ALLOWED_IPS is set, only allow those IPs; otherwise allow RFC1918
 if [ -n "$ALLOWED_IPS" ]; then
-    cat >> "$CONF" <<EOF
+    cat >> "$CONF" <<'EOF'
 http_access allow allowed_clients
 http_access deny all
 EOF
 else
-    cat >> "$CONF" <<EOF
+    cat >> "$CONF" <<'EOF'
 http_access allow localnet
 http_access allow localhost
 http_access deny all
@@ -118,7 +153,7 @@ echo "=== Squid configuration ==="
 cat "$CONF"
 echo "=========================="
 
-# Create log & cache directories with correct permissions
+# Fix permissions
 mkdir -p /var/log/squid /var/spool/squid
 chown -R squid:squid /var/log/squid /var/spool/squid
 
