@@ -14,10 +14,11 @@ services:
       - squid-ssl:/var/lib/squid/ssl_db
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "squid", "-k", "check"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "squid -k check 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
 
   squid-stats:
     image: ghcr.io/kaelthasmanu/squidstats:latest
