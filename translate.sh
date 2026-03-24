@@ -521,6 +521,7 @@ sed -i \
 # --- navbar.html ---
 for f in templates/components/navbar.html templates/admin/navbar.html; do
   [ -f "$f" ] && sed -i \
+    -e 's/Usuarios/Users/g' \
     -e 's/Notificaciones/Notifications/g' \
     -e 's/Panel principal con conexiones activas/Main panel with active connections/g' \
     -e 's/Inicio/Home/g' \
@@ -708,24 +709,20 @@ sed -i \
   templates/partials/black_list.html
 
 # --- cache_stats.html ---
+# IMPORTANT: Replace full phrases BEFORE single words to avoid partial matches
 sed -i \
-  -e 's/Sistema/System/g' \
-  -e 's/Caché/Cache/g' \
-  -e 's/Red/Network/g' \
   -e 's/Estadísticas del Sistema/System Statistics/g' \
-  -e 's/núcleos/cores/g' \
+  -e 's/Estadísticas de Caché/Cache Statistics/g' \
   -e 's/Información del Sistema/System Information/g' \
+  -e 's/Gráficas del Sistema/System Charts/g' \
+  -e 's/Sistema Operativo/Operating System/g' \
   -e 's/Nombre del Host/Hostname/g' \
   -e 's/Direcciones IP/IP Addresses/g' \
-  -e 's/Sistema Operativo/Operating System/g' \
   -e 's/Tiempo Encendido/Uptime/g' \
   -e 's/Zona Horaria/Time Zone/g' \
   -e 's/Hora Local/Local Time/g' \
-  -e 's/Gráficas del Sistema/System Charts/g' \
-  -e 's/Hoy/Today/g' \
-  -e 's/24 Horas/24 Hours/g' \
-  -e 's/Estadísticas de Caché/Cache Statistics/g' \
-  -e 's/Entradas [Aa]lmacenadas/Stored Entries/g' \
+  -e 's/Tráfico de Red/Network Traffic/g' \
+  -e 's/Política de eliminación/Eviction policy/g' \
   -e 's/Número de objetos actualmente en la caché de Squid\./Number of objects currently in the Squid cache./g' \
   -e 's/Uso de capacidad/Capacity usage/g' \
   -e 's/Porcentaje del almacenamiento de caché en uso actualmente\./Percentage of cache storage currently in use./g' \
@@ -734,12 +731,17 @@ sed -i \
   -e 's/No disponible/Not available/g' \
   -e 's/Espacio usado/Used space/g' \
   -e 's/Cantidad de espacio de disco ya ocupado por objetos en caché\./Amount of disk space already occupied by cached objects./g' \
-  -e 's/Eliminación/Eviction/g' \
-  -e 's/Política de eliminación/Eviction policy/g' \
   -e 's/Método que Squid usa para eliminar objetos antiguos de la caché\./Method Squid uses to evict old objects from the cache./g' \
   -e 's/Edad LRU/LRU Age/g' \
   -e 's/Tiempo desde que el objeto menos usado fue accedido por última vez\./Time since the least recently used object was last accessed./g' \
-  -e 's/Tráfico de Red/Network Traffic/g' \
+  -e 's/Entradas [Aa]lmacenadas/Stored Entries/g' \
+  -e 's/núcleos/cores/g' \
+  -e 's/Hoy/Today/g' \
+  -e 's/24 Horas/24 Hours/g' \
+  -e 's/Eliminación/Eviction/g' \
+  -e 's/Sistema/System/g' \
+  -e 's/Caché/Cache/g' \
+  -e 's/Red/Network/g' \
   templates/partials/cache_stats.html
 
 # --- conexiones.html ---
@@ -789,6 +791,7 @@ sed -i \
 
 find templates -name '*.html' -exec sed -i \
   -e 's/>Usuario</>Username</g' \
+  -e 's/>Usuarios</>Users</g' \
   -e 's/>Contraseña</>Password</g' \
   -e 's/>Rol</>Role</g' \
   -e 's/>Estado</>Status</g' \
@@ -796,6 +799,24 @@ find templates -name '*.html' -exec sed -i \
   -e 's/>Inactivo</>Inactive</g' \
   -e 's/>Configuración</>Configuration</g' \
   -e 's/>General</>General</g' \
+  -e 's/>Guardar</>Save</g' \
+  -e 's/>Cancelar</>Cancel</g' \
+  -e 's/>Eliminar</>Delete</g' \
+  -e 's/>Editar</>Edit</g' \
+  -e 's/>Acciones</>Actions</g' \
+  {} +
+
+# Catch remaining Spanish phrases across ALL files
+find templates -name '*.html' -exec sed -i \
+  -e 's/Estadísticas del Sistema/System Statistics/g' \
+  -e 's/Información del Sistema/System Information/g' \
+  -e 's/Gráficas del Sistema/System Charts/g' \
+  -e 's/Sistema Operativo/Operating System/g' \
+  -e 's/Estadísticas del System/System Statistics/g' \
+  -e 's/Información del System/System Information/g' \
+  -e 's/Gráficas del System/System Charts/g' \
+  -e 's/System Operativo/Operating System/g' \
+  -e 's/Usuarios/Users/g' \
   {} +
 
 echo "Translation complete!"
