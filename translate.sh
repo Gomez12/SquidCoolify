@@ -73,6 +73,30 @@ sed -i \
   -e 's/devolvió un error/returned an error/g' \
   routes/stats_routes.py
 
+# --- routes/main_routes.py ---
+[ -f routes/main_routes.py ] && sed -i \
+  -e 's/Inicio Dashboard/Dashboard/g' \
+  -e 's/Todas las Notificaciones/All Notifications/g' \
+  -e 's/Historial completo de notificaciones del sistema/Complete system notification history/g' \
+  -e 's/Error al cargar las notificaciones/Error loading notifications/g' \
+  routes/main_routes.py
+
+# --- routes/logs_routes.py ---
+[ -f routes/logs_routes.py ] && sed -i \
+  -e 's/Actividad usuarios/User Activity/g' \
+  -e 's/Analisis de la Actividad de los Usuarios/User Activity Analysis/g' \
+  -e 's/Registros Bloqueados/Blocked Records/g' \
+  -e 's/Peticiones que deberian ser bloqueadas o fueron bloqueadas/Requests that should be blocked or were blocked/g' \
+  routes/logs_routes.py
+
+# --- routes/reports_routes.py ---
+[ -f routes/reports_routes.py ] && sed -i \
+  -e 's/Reportes y gráficas/Reports and Charts/g' \
+  -e 's/Top de la Actividad de los Usuarios y comportamiento/Top User Activity and Behavior/g' \
+  -e 's/Centro de Auditoría/Audit Center/g' \
+  -e 's/Herramienta para el análisis de actividad y seguridad\./Activity and security analysis tool./g' \
+  routes/reports_routes.py
+
 # --- app.py ---
 sed -i \
   -e 's/Filtro para formatear fechas en las plantillas/Filter to format dates in templates/g' \
@@ -205,6 +229,8 @@ sed -i \
   -e 's/Exportar archivo hosts/Export hosts file/g' \
   -e 's/Lista Personalizada/Custom List/g' \
   -e 's/Añade dominios manualmente o pega una lista separada por comas\/lineas\./Add domains manually or paste a comma\/line-separated list./g' \
+  -e 's/Añade dominios manualmente/Add domains manually/g' \
+  -e 's/o pega una lista separada por comas\/lineas/or paste a comma\/line-separated list/g' \
   -e 's/Importa desde archivos locales o pega URLs de listas públicas\./Import from local files or paste public list URLs./g' \
   -e 's/Subir archivo/Upload file/g' \
   -e 's/Exporta o importa reglas en formato compatible con dnsmasq\./Export or import rules in dnsmasq-compatible format./g' \
@@ -246,9 +272,6 @@ sed -i \
 sed -i \
   -e 's/Gestión de Access Control Lists (ACLs)/Access Control Lists (ACLs) Management/g' \
   -e 's/Define condiciones para controlar el acceso al proxy/Define conditions to control proxy access/g' \
-  -e 's/¡MUY IMPORTANTE!/VERY IMPORTANT!/g' \
-  -e 's/Esta funcionalidad se encuentra en RC\. Puede contener errores y comportamientos inesperados\./This feature is in RC. It may contain errors and unexpected behavior./g' \
-  -e 's/Por favor, no la uses en producción de momento\. Úsala únicamente en un entorno de prueba\./Please do not use it in production. Use it only in a test environment./g' \
   -e 's/Acerca de las ACLs:/About ACLs:/g' \
   -e 's/ACLs rápidas - no requieren lookups externos/Fast ACLs - no external lookups required/g' \
   -e 's/ACLs lentas - pueden requerir DNS o autenticación/Slow ACLs - may require DNS or authentication/g' \
@@ -259,6 +282,7 @@ sed -i \
   -e 's/No hay ACLs personalizadas configuradas/No custom ACLs configured/g' \
   -e 's/Las ACLs predefinidas de Squid siguen disponibles/Squid predefined ACLs are still available/g' \
   -e 's/Crear primera ACL/Create first ACL/g' \
+  -e 's/Agregar ACL/Add ACL/g' \
   templates/admin/acls_new.html
 
 # --- acls_modals.html ---
@@ -346,7 +370,6 @@ sed -i \
   -e 's/Descripción (opcional):/Description (optional):/g' \
   -e 's/Ej: Permitir acceso desde la red local/E.g.: Allow access from local network/g' \
   -e 's/Se agregará como comentario antes de la regla/Will be added as a comment before the rule/g' \
-  -e 's/Tip: Usa.*puerto seguro\./Tip: Use ! before an ACL name for negation. E.g.: !Safe_ports matches when it is NOT a safe port./g' \
   -e 's/Crear Regla/Create Rule/g' \
   -e 's/Editar Regla HTTP Access/Edit HTTP Access Rule/g' \
   -e 's/Guardar Cambios/Save Changes/g' \
@@ -354,27 +377,31 @@ sed -i \
   -e 's/Debe haber al menos una ACL en la regla/There must be at least one ACL in the rule/g' \
   -e 's/¿Estás seguro de que quieres eliminar la regla/Are you sure you want to delete the rule/g' \
   -e 's/Esto puede afectar el acceso al proxy\./This may affect proxy access./g' \
+  -e 's/Si tu squid\.conf aún no está dividido, puedes/If your squid.conf is not yet split, you can/g' \
+  -e 's/dividir tu configuración/split your configuration/g' \
+  -e 's/para una mejor gestión modular\./for better modular management./g' \
+  -e 's/Si ya está dividido, verifica que los archivos estén en el directorio correcto o edítalos directamente desde/If already split, verify the files are in the correct directory or edit them directly from/g' \
   -e 's/Cancelar/Cancel/g' \
   templates/admin/http_access.html
 
 # --- delay_pools.html ---
 sed -i \
   -e 's/Gestión de Delay Pools/Delay Pools Management/g' \
-  -e 's/¡MUY IMPORTANTE!/VERY IMPORTANT!/g' \
   -e 's/¿Qué son los Delay Pools?/What are Delay Pools?/g' \
+  -e 's/Los delay pools permiten limitar el ancho de banda de ciertas solicitudes basadas en criterios específicos, proporcionando un control justo del tráfico\./Delay pools allow you to limit bandwidth for certain requests based on specific criteria, providing fair traffic control./g' \
   -e 's/Clases disponibles:/Available classes:/g' \
   -e 's/Limitaciones importantes:/Important limitations:/g' \
   -e 's/Agregar Pool/Add Pool/g' \
   -e 's/Crear primer Pool/Create first Pool/g' \
-  -e 's/Clase 1: Un solo bucket agregado para todos los clientes/Class 1: A single aggregate bucket for all clients/g' \
-  -e 's/Clase 2: Bucket agregado + buckets individuales por host/Class 2: Aggregate bucket + individual buckets per host/g' \
-  -e 's/Clase 3: Buckets por subred + buckets individuales por host/Class 3: Subnet buckets + individual buckets per host/g' \
-  -e 's/Clase 4: Como clase 3 + buckets por usuario autenticado/Class 4: Like class 3 + buckets per authenticated user/g' \
-  -e 's/Clase 5: Basado en tags de external_acl_type/Class 5: Based on external_acl_type tags/g' \
+  -e 's/Un solo bucket agregado para todos los clientes/A single aggregate bucket for all clients/g' \
+  -e 's/Bucket agregado + buckets individuales por host/Aggregate bucket + individual buckets per host/g' \
+  -e 's/Buckets por subred + buckets individuales por host/Subnet buckets + individual buckets per host/g' \
+  -e 's/Como clase 3 + buckets por usuario autenticado/Like class 3 + buckets per authenticated user/g' \
+  -e 's/Basado en tags de external_acl_type/Based on external_acl_type tags/g' \
+  -e 's/Clase /Class /g' \
   -e 's/No limita overheads como TCP, ICP, DNS, etc\./Does not limit overheads like TCP, ICP, DNS, etc./g' \
   -e 's/Incompatible con slow aborts; usa quick abort bajo/Incompatible with slow aborts; use low quick abort/g' \
   -e 's/Una conexión puede tomar todo el ancho de banda de un bucket/A single connection can take all the bandwidth of a bucket/g' \
-  -e 's/En Squid < 3\.1, buckets limitados a 32-bits/In Squid < 3.1, buckets limited to 32-bits/g' \
   -e 's/No hay delay pools configurados/No delay pools configured/g' \
   -e 's/¿Ya tienes delay pools configurados?/Do you already have delay pools configured?/g' \
   -e 's/Número de Pool:/Pool Number:/g' \
@@ -411,7 +438,9 @@ sed -i \
   -e 's/archivos generados/files generated/g' \
   -e 's/No dividido aún/Not split yet/g' \
   -e 's/¿Qué hace esta funcionalidad?/What does this feature do?/g' \
-  -e 's/Esta herramienta divide tu archivo monolítico squid\.conf en múltiples archivos modulares/This tool splits your monolithic squid.conf file into multiple modular files/g' \
+  -e 's/Esta herramienta divide tu archivo monolítico/This tool splits your monolithic/g' \
+  -e 's/en múltiples archivos modulares organizados por categorías\. Esto facilita:/into multiple modular files organized by category. This enables:/g' \
+  -e 's/en múltiples archivos modulares/into multiple modular files/g' \
   -e 's/Gestión y mantenimiento más sencillo de la configuración/Easier configuration management and maintenance/g' \
   -e 's/Mejor organización de directivas por funcionalidad/Better organization of directives by functionality/g' \
   -e 's/Facilita la edición desde la interfaz web/Facilitates editing from the web interface/g' \
@@ -644,6 +673,7 @@ sed -i \
 sed -i \
   -e 's/Buscar por usuario\.\.\./Search by user.../g' \
   -e 's/Limpiar búsqueda/Clear search/g' \
+  -e 's/ACTIVIDAD/ACTIVITY/g' \
   templates/logsView.html
 
 # ============================================================
@@ -692,6 +722,16 @@ sed -i \
   -e 's/Generar Reporte/Generate Report/g' \
   -e 's/Seleccione los filtros y genere un reporte/Select the filters and generate a report/g' \
   -e 's/Los resultados de su auditoría aparecerán aquí\./Your audit results will appear here./g' \
+  -e 's/Fecha de Inicio/Start Date/g' \
+  -e 's/Seleccionar usuario\.\.\./Select user.../g' \
+  -e 's/Actividad General/General Activity/g' \
+  -e 's/Auditoría Técnica/Technical Audit/g' \
+  -e 's/Seguridad y Políticas/Security and Policies/g' \
+  -e 's/Respuestas Exitosas (2xx)/Successful Responses (2xx)/g' \
+  -e 's/Redirecciones (3xx)/Redirections (3xx)/g' \
+  -e 's/Errores de Cliente (4xx)/Client Errors (4xx)/g' \
+  -e 's/Errores de Servidor (5xx)/Server Errors (5xx)/g' \
+  -e 's/Usuario/Username/g' \
   templates/partials/auditoria.html
 
 # --- black_list.html ---
@@ -777,6 +817,7 @@ sed -i \
   -e 's/Registros de Log/Log Records/g' \
   -e 's/Datos Transmitidos/Data Transmitted/g' \
   -e 's/Top 20 Usuarios por Actividad/Top 20 Users by Activity/g' \
+  -e 's/Top 20 Users por Data Transmitted/Top 20 Users by Data Transmitted/g' \
   -e 's/Top 20 Usuarios por Datos Transmitidos/Top 20 Users by Data Transmitted/g' \
   -e 's/Distribución de Códigos HTTP/HTTP Code Distribution/g' \
   -e 's/Top 20 Páginas Más Visitadas/Top 20 Most Visited Pages/g' \
@@ -806,7 +847,7 @@ find templates -name '*.html' -exec sed -i \
   -e 's/>Acciones</>Actions</g' \
   {} +
 
-# Catch remaining Spanish phrases across ALL files
+# Catch remaining Spanish phrases across ALL template and Python files
 find templates -name '*.html' -exec sed -i \
   -e 's/Estadísticas del Sistema/System Statistics/g' \
   -e 's/Información del Sistema/System Information/g' \
@@ -817,6 +858,64 @@ find templates -name '*.html' -exec sed -i \
   -e 's/Gráficas del System/System Charts/g' \
   -e 's/System Operativo/Operating System/g' \
   -e 's/Usuarios/Users/g' \
+  -e 's/ACTIVIDAD/ACTIVITY/g' \
+  {} +
+
+# RC warning - match with HTML tags in between
+find templates -name '*.html' -exec sed -i \
+  -e 's/Esta funcionalidad se encuentra en/This feature is in/g' \
+  -e 's/Puede contener errores y comportamientos inesperados/It may contain errors and unexpected behavior/g' \
+  -e 's/Por favor, no la uses en producción de momento\./Please do not use it in production for now./g' \
+  -e 's/Úsala únicamente en un entorno de prueba\./Use it only in a test environment./g' \
+  -e 's/Por favor, no la uses en producción de momento/Please do not use it in production for now/g' \
+  -e 's/Úsala únicamente en un entorno de prueba/Use it only in a test environment/g' \
+  -e 's/¡MUY IMPORTANTE!/VERY IMPORTANT!/g' \
+  {} +
+
+# Delay pools / HTTP access shared text with HTML links
+find templates -name '*.html' -exec sed -i \
+  -e 's/Si tu squid\.conf aún no está dividido, puedes/If your squid.conf is not yet split, you can/g' \
+  -e 's/dividir tu configuración/split your configuration/g' \
+  -e 's/para una mejor gestión modular\./for better modular management./g' \
+  -e 's/para una mejor gestión modular/for better modular management/g' \
+  -e 's/Si ya está dividido, verifica que los archivos estén en el directorio correcto o edítalos directamente desde/If already split, verify the files are in the correct directory or edit them directly from/g' \
+  -e 's/Los delay pools permiten limitar el ancho de banda de ciertas solicitudes basadas en criterios específicos, proporcionando un control justo del tráfico\./Delay pools allow you to limit bandwidth for certain requests based on specific criteria, providing fair traffic control./g' \
+  -e 's/Los delay pools permiten limitar el ancho de banda de ciertas solicitudes basadas en criterios específicos, proporcionando un control justo del tráfico/Delay pools allow you to limit bandwidth for certain requests based on specific criteria, providing fair traffic control/g' \
+  {} +
+
+# Split config remaining text
+find templates -name '*.html' -exec sed -i \
+  -e 's/Esta herramienta divide tu archivo monolítico/This tool splits your monolithic/g' \
+  -e 's/en múltiples archivos modulares organizados por categorías\. Esto facilita:/into multiple modular files organized by category. This enables:/g' \
+  -e 's/en múltiples archivos modulares/into multiple modular files/g' \
+  {} +
+
+# Remaining common Spanish words/phrases
+find templates -name '*.html' -exec sed -i \
+  -e 's/Fecha de Inicio/Start Date/g' \
+  -e 's/Seleccionar usuario\.\.\./Select user.../g' \
+  -e 's/Lista Personalizada/Custom List/g' \
+  -e 's/Añade dominios manualmente/Add domains manually/g' \
+  -e 's/o pega una lista separada por comas/or paste a comma-separated list/g' \
+  -e 's/Clase /Class /g' \
+  {} +
+
+# Also translate any remaining Spanish in Python route files
+find routes -name '*.py' -exec sed -i \
+  -e 's/Actividad usuarios/User Activity/g' \
+  -e 's/Analisis de la Actividad de los Usuarios/User Activity Analysis/g' \
+  -e 's/Registros Bloqueados/Blocked Records/g' \
+  -e 's/Peticiones que deberian ser bloqueadas o fueron bloqueadas/Requests that should be blocked or were blocked/g' \
+  -e 's/Reportes y gráficas/Reports and Charts/g' \
+  -e 's/Top de la Actividad de los Usuarios y comportamiento/Top User Activity and Behavior/g' \
+  -e 's/Centro de Auditoría/Audit Center/g' \
+  -e 's/Herramienta para el análisis de actividad y seguridad\./Activity and security analysis tool./g' \
+  -e 's/Estadísticas del Sistema/System Statistics/g' \
+  -e 's/Estadisticas del comportamiento del Sistema/System Behavior Statistics/g' \
+  -e 's/Inicio Dashboard/Dashboard/g' \
+  -e 's/Todas las Notificaciones/All Notifications/g' \
+  -e 's/Historial completo de notificaciones del sistema/Complete system notification history/g' \
+  -e 's/Error al cargar las notificaciones/Error loading notifications/g' \
   {} +
 
 echo "Translation complete!"
